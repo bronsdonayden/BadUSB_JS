@@ -24,7 +24,7 @@ function broadcast(type, data) {
 }
 
 app.post('/upload/dirs', (req, res) => {
-  // TODO
+  console.log(req);
   res.sendStatus(200);
 });
 
