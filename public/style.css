@@ -5,7 +5,133 @@
 }
 
 body {
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#desktop {
+  width: 100%;
+  height: calc(100% - 48px);
+  background: #008080;
+  position: relative;
+}
+
+#taskbar {
+  width: 100%;
+  height: 48px;
   background: #1a1a1a;
-  color: #fff;
-  font-family: monospace;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.desktop-icon {
+  width: 80px;
+  padding: 5px;
+  text-align: center;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.desktop-icon img {
+  width: 48px;
+  height: 48px;
+}
+
+#explorer{
+  position: absolute;
+  overflow: auto;
+  resize: both;
+  background:black;
+  color: white;
+  z-index: 100;
+  top: 50px;
+  left: 80px;
+  width: 700px;
+  height: 450px;
+
+
+}
+
+#explorer-titlebar {
+  background: #2d2d2d;
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+#explorer-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#explorer-close:hover {
+  background: #e81123;
+}
+
+
+
+
+#image-viewer {
+  position: absolute;
+  top: 80px;
+  left: 200px;
+  width: 600px;
+  height: 450px;
+  background: #1a1a1a;
+  z-index: 200;
+  resize: both;
+  overflow: hidden;
+}
+
+#viewer-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#viewer-content {
+  width: 100%;
+  height: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+#viewer-close:hover {
+  background: #e81123;
+}
+
+#viewer-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
+
+#viewer-titlebar {
+  background: #2d2d2d;
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+
+.hidden {
+  display: none;
 }

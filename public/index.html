@@ -5,7 +5,25 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app"></div>
+  <div id="desktop"></div>
+  <div id="taskbar"></div>
+
+  <div id="explorer" class="hidden">
+  <div id="explorer-titlebar">
+    <span id="explorer-title">File Explorer</span>
+    <button id="explorer-close">&times;</button>
+  </div>
+  <div id="explorer-content"></div>
+</div>
+<div id="image-viewer" class="hidden">
+  <div id="viewer-titlebar">
+    <span id="viewer-title">Image Viewer</span>
+    <button id="viewer-close">&times;</button>
+  </div>
+  <div id="viewer-content">
+    <img id="viewer-img" src="" alt="">
+  </div>
+</div>
   <script src="app.js"></script>
 </body>
 </html>
