@@ -79,6 +79,55 @@ function ImageViewer(fullPath) {
   document.getElementById('image-viewer').classList.remove('hidden');
 }
 
+function renderDesktop() {
+  const desktopPath = findFolderPath(fileTree, 'Desktop');
+  if (!desktopPath) return;
+
+  const desktopNode = getNode(desktopPath);
+  if (!desktopNode) return;
+
+  const desktop = document.getElementById('desktop');
+  desktop.innerHTML = '';
+
+  Object.keys(desktopNode).forEach(childName => {
+    const div = document.createElement('div');
+    div.className = 'desktop-icon';
+    const ext = childName.split('.').pop().toLowerCase();
+    const fullPath = desktopPath.join('\\') + '\\' + childName;
+    const isFolder = desktopNode[childName] !== null;
+    const img = document.createElement('img');
+
+    if (isFolder) {
+      img.src = '/images/folder.png';
+      div.addEventListener('dblclick', () => {
+        currentPath = [...desktopPath, childName];
+        document.getElementById('explorer').classList.remove('hidden');
+        renderFileExplorer();
+      });
+    } else {
+      if (['jpg','jpeg','png','webp','gif','bmp'].includes(ext) && imageData[fullPath]) {
+        const mimeTypes = {'png':'image/png','jpg':'image/jpeg','jpeg':'image/jpeg','gif':'image/gif','webp':'image/webp','bmp':'image/bmp'};
+        img.src = `data:${mimeTypes[ext]||'image/png'};base64,${imageData[fullPath]}`;
+      } else {
+        img.src = getIconPath(childName, false);
+      }
+      div.addEventListener('dblclick', () => {
+        if (['jpg','jpeg','png','webp','gif','bmp'].includes(ext)) {
+          ImageViewer(fullPath);
+        } else if (['txt','log','csv'].includes(ext)) {
+          TextViewer(fullPath);
+        }
+      });
+    }
+
+    const label = document.createElement('span');
+    label.textContent = childName;
+    div.appendChild(img);
+    div.appendChild(label);
+    desktop.appendChild(div);
+  });
+}
+
 // Gets the current node in the tree
 function getNode(path) {
   let node = fileTree;
@@ -214,6 +263,7 @@ ws.onmessage = (event) => {
 
   if (msg.type === 'dirs') {
     fileTree = msg.data;
+    renderDesktop();
 
   } else if (msg.type === 'files') {
     textData[msg.data.path] = msg.data.text;
