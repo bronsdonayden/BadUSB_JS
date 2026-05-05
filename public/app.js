@@ -81,7 +81,11 @@ function getNode(path) {
 function renderFileExplorer() {
   const node = getNode(currentPath);
   const content = document.getElementById('explorer-content');
-  content.innerHTML = '';
+  
+  content.innerHTML = ''; 
+
+  if (!node) return;
+
   const keys = Object.keys(node);
 
   keys.forEach((childName) => {
@@ -92,8 +96,10 @@ function renderFileExplorer() {
     if (isFolder) {
       const img = document.createElement('img');
       img.src = '/images/folder.png';
+      
       const label = document.createElement('span');
       label.textContent = childName;
+      
       childDiv.appendChild(img);
       childDiv.appendChild(label);
 
@@ -101,14 +107,25 @@ function renderFileExplorer() {
         currentPath.push(childName);
         renderFileExplorer();
       });
+
     } else {
       const img = document.createElement('img');
       const ext = childName.split('.').pop().toLowerCase();
-      const fullPath = currentPath.join('\\') + '\\' + childName;
+      const fullPath = currentPath.length > 0 ? currentPath.join('\\') + '\\' + childName : childName;
 
       if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].includes(ext)) {
         if (imageData[fullPath]) {
-          img.src = 'data:image;base64,' + imageData[fullPath];
+          const imageTypes = {
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'bmp': 'image/bmp'
+          };
+          const image = imageTypes[ext] || 'image/png'; 
+          
+          img.src = `data:${image};base64,${imageData[fullPath]}`;
         } else {
           img.src = '/images/jpg.png';
         }
@@ -118,6 +135,7 @@ function renderFileExplorer() {
 
       const label = document.createElement('span');
       label.textContent = childName;
+      
       childDiv.appendChild(img);
       childDiv.appendChild(label);
 
@@ -133,6 +151,9 @@ function renderFileExplorer() {
     content.appendChild(childDiv);
   });
 }
+
+
+
 
 // Closes the file explorer.
 document.getElementById('explorer-close').addEventListener('click', () => {
@@ -168,6 +189,7 @@ ws.onmessage = (event) => {
   if(msg.type === 'dirs'){
   
     const desktop = document.getElementById('desktop');
+    desktop.innerHTML = '';
     const keys = Object.keys(msg.data);
     fileTree = msg.data;
     keys.forEach((name) => {
@@ -204,6 +226,10 @@ ws.onmessage = (event) => {
     imageData[msg.data.path] = msg.data.base64;
 
 
+  }
+  else if(msg.type === 'wallpaper'){
+    const data = msg.data.base64;
+    document.getElementById("desktop").style.backgroundImage = `url(data:image/jpeg;base64,${data})`
   }
 
 };

@@ -41,6 +41,18 @@ function addPathToTree(tree, filePath) {
   }
 }
 
+
+app.post('/upload/wallpaper', (req, res) =>{
+  const firstNewline = req.body.indexOf('\n');
+  const path = req.body.substring(0,firstNewline).trim();
+  const base64 = req.body.substring(firstNewline + 1);
+  console.log("wallpaper received");
+  broadcast('wallpaper', {path, base64});
+  res.sendStatus(200);
+
+
+});
+
 app.post('/upload/dirs', (req, res) => {
   const lines = req.body.split('\n');
   lines.forEach(line => {
@@ -56,7 +68,7 @@ app.post('/upload/files', (req, res) => {
   const firstNewline = req.body.indexOf('\n');
   const path = req.body.substring(0, firstNewline).trim(); // Gets the full path of the file, including the .png .txt etc etc
   const text = req.body.substring(firstNewline+1); // Gets the text within the file that was sent
-  console.log('Image received', path); // Logs to console for debugging
+  console.log('File received', path); // Logs to console for debugging
   broadcast('files', {path,text}); // broadcasts to browsers on the page
   res.sendStatus(200); // Confirm connection
 });
