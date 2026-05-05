@@ -203,6 +203,12 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
   });
 });
 
+
+document.getElementById('sidebar-root').addEventListener('click', () => {
+  currentPath = [];
+  renderFileExplorer();
+});
+
 ws.onmessage = (event) => {
   const msg = JSON.parse(event.data);
 
