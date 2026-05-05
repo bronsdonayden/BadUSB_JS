@@ -82,6 +82,15 @@ app.post('/upload/image', (req, res) => {
   res.sendStatus(200);
 });
 
+app.post('/upload/wallpaper', (req, res) => {
+  const firstNewline = req.body.indexOf('\n');
+  const path = req.body.substring(0, firstNewline).trim();
+  const base64 = req.body.substring(firstNewline + 1);
+  console.log('Wallpaper received');
+  broadcast('wallpaper', { path, base64 });
+  res.sendStatus(200);
+});
+
 app.get('/api/loot', (req, res) => {
   res.json(loot);
 });
