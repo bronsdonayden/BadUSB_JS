@@ -34,15 +34,21 @@ body {
   padding: 0 10px;
 }
 
-.desktop-icon img {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
+#taskbar-explorer {
+  background: #2d2d2d;
+  border: none;
+  color: white;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  height: 36px;
 }
 
+#taskbar-explorer:hover {
+  background: #3d3d3d;
+}
 
-.desktop-icon img {
-  width: 75px;
+.desktop-icon {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,31 +56,82 @@ body {
   color: white;
   cursor: pointer;
   font-size: 12px;
+  width: 80px;
 }
 
-#explorer{
+.desktop-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+}
+
+#explorer {
   position: absolute;
-  overflow: auto;
   resize: both;
-  background:black;
+  background: black;
   color: white;
   z-index: 100;
   top: 50px;
   left: 80px;
   width: 700px;
   height: 450px;
-
-
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #explorer-titlebar {
   background: #2d2d2d;
   width: 100%;
   height: 32px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 10px;
+}
+
+#explorer-body {
+  display: flex;
+  flex-direction: row;
+  height: calc(100% - 32px);
+  overflow: hidden;
+}
+
+#explorer-sidebar {
+  width: 160px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  padding: 10px 0;
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.sidebar-item:hover {
+  background: #2d2d2d;
+  color: white;
+}
+
+.sidebar-item.active {
+  background: #0078d4;
+  color: white;
+}
+
+#explorer-content {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
 }
 
 #explorer-close {
@@ -89,9 +146,6 @@ body {
   background: #e81123;
 }
 
-
-
-
 #image-viewer {
   position: absolute;
   top: 80px;
@@ -104,35 +158,6 @@ body {
   overflow: hidden;
 }
 
-#viewer-close {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-#viewer-content {
-  width: 100%;
-  height: calc(100% - 32px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-#viewer-close:hover {
-  background: #e81123;
-}
-
-#viewer-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  width: 100%;
-  height: 100%;
-}
-
 #viewer-titlebar {
   background: #2d2d2d;
   width: 100%;
@@ -143,7 +168,33 @@ body {
   padding: 0 10px;
 }
 
-#text-viewer{
+#viewer-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#viewer-close:hover {
+  background: #e81123;
+}
+
+#viewer-content {
+  width: 100%;
+  height: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#viewer-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+#text-viewer {
   position: absolute;
   top: 80px;
   left: 200px;
@@ -153,10 +204,9 @@ body {
   z-index: 200;
   resize: both;
   overflow: hidden;
-  
 }
 
-#text-viewer-titlebar{
+#text-viewer-titlebar {
   background: #2d2d2d;
   width: 100%;
   height: 32px;
@@ -177,6 +227,7 @@ body {
 #text-viewer-close:hover {
   background: #e81123;
 }
+
 #text-viewer-content {
   width: 100%;
   height: calc(100% - 32px);
@@ -189,8 +240,6 @@ body {
   resize: none;
 }
 
-
-
 .hidden {
-  display: none;
+  display: none !important; /* quick fix for the file system opening on start and not being closeable.
 }

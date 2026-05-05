@@ -4,6 +4,17 @@ let currentPath = [];
 let imageData = {};
 let textData = {};
 
+// For sidebar 
+function findFolderPath(tree, targetName, currentPath = []) {
+  for (const key of Object.keys(tree)) {
+    if (tree[key] !== null && typeof tree[key] === 'object') {
+      if (key === targetName) return [...currentPath, key];
+      const result = findFolderPath(tree[key], targetName, [...currentPath, key]);
+      if (result) return result;
+    }
+  }
+  return null;
+}
 
 // gets the icon for the type of file.
 function getIconPath(name, isFolder) {
@@ -12,13 +23,9 @@ function getIconPath(name, isFolder) {
   const icons = {
     txt: '/images/txt.png',
     log: '/images/log.png',
-
-
   };
   return icons[ext] || '/images/file.png';
 }
-
-
 
 // Makes the windows draggable
 function makeDraggable(windowEl, titlebarEl) {
@@ -41,48 +48,50 @@ function makeDraggable(windowEl, titlebarEl) {
   });
 }
 
-// Uses the function makeDraggable, to make the draggable.
 makeDraggable(document.getElementById('explorer'), document.getElementById('explorer-titlebar'));
 makeDraggable(document.getElementById('image-viewer'), document.getElementById('viewer-titlebar'));
 makeDraggable(document.getElementById('text-viewer'), document.getElementById('text-viewer-titlebar'));
 
 // renders text viewer
-function TextViewer(fullPath){
- const string = textData[fullPath];
- const textShown = document.getElementById('text-viewer-content');
- const viewer = document.getElementById('text-viewer');
- textShown.value = string;
+function TextViewer(fullPath) {
+  const string = textData[fullPath];
+  const textShown = document.getElementById('text-viewer-content');
+  const viewer = document.getElementById('text-viewer');
+  textShown.value = string;
   viewer.classList.remove('hidden');
-
 }
-
 
 // Renders image viewer
-function ImageViewer(fullPath){
+function ImageViewer(fullPath) {
   const base64 = imageData[fullPath];
+  const ext = fullPath.split('.').pop().toLowerCase();
+  const imageTypes = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+    'bmp': 'image/bmp'
+  };
+  const type = imageTypes[ext] || 'image/png';
   const img = document.getElementById('viewer-img');
-  img.src = 'data:image;base64,' + base64;
+  img.src = `data:${type};base64,${base64}`;
   document.getElementById('image-viewer').classList.remove('hidden');
-  
 }
 
-// Gets the current node in the tree, in better terms it gets the current folder you are in.
+// Gets the current node in the tree
 function getNode(path) {
   let node = fileTree;
-  for(let i = 0; i < path.length; i++){
+  for (let i = 0; i < path.length; i++) {
     node = node[path[i]];
   }
   return node;
 }
 
-
-//Opens the file explorer, checks if the node has any children, if it doesn't that menans 
-//it is a file, not a directory, so then when you double click it opens the file. Either image or some form of text
 function renderFileExplorer() {
   const node = getNode(currentPath);
   const content = document.getElementById('explorer-content');
-  
-  content.innerHTML = ''; 
+  content.innerHTML = '';
 
   if (!node) return;
 
@@ -96,10 +105,8 @@ function renderFileExplorer() {
     if (isFolder) {
       const img = document.createElement('img');
       img.src = '/images/folder.png';
-      
       const label = document.createElement('span');
       label.textContent = childName;
-      
       childDiv.appendChild(img);
       childDiv.appendChild(label);
 
@@ -123,11 +130,10 @@ function renderFileExplorer() {
             'webp': 'image/webp',
             'bmp': 'image/bmp'
           };
-          const image = imageTypes[ext] || 'image/png'; 
-          
+          const image = imageTypes[ext] || 'image/png';
           img.src = `data:${image};base64,${imageData[fullPath]}`;
         } else {
-          img.src = '/images/jpg.png';
+          img.src = '/images/file.png';
         }
       } else {
         img.src = getIconPath(childName, false);
@@ -135,7 +141,6 @@ function renderFileExplorer() {
 
       const label = document.createElement('span');
       label.textContent = childName;
-      
       childDiv.appendChild(img);
       childDiv.appendChild(label);
 
@@ -152,88 +157,69 @@ function renderFileExplorer() {
   });
 }
 
-
-
-
 // Closes the file explorer.
 document.getElementById('explorer-close').addEventListener('click', () => {
   document.getElementById('explorer').classList.add('hidden');
   currentPath = [];
 });
 
-//Close image viewer
+// Close image viewer
 document.getElementById('viewer-close').addEventListener('click', () => {
   document.getElementById('image-viewer').classList.add('hidden');
 });
 
-//close text viewer
+// Close text viewer
 document.getElementById('text-viewer-close').addEventListener('click', () => {
   document.getElementById('text-viewer').classList.add('hidden');
 });
 
-// Back button, goes back in the file explorer.
+// Back button
 document.getElementById('explorer-back').addEventListener('click', () => {
-
-  if(currentPath.length > 1){
+  if (currentPath.length > 0) {
     currentPath.pop();
   }
   renderFileExplorer();
-
 });
 
+// Taskbar button
+document.getElementById('taskbar-explorer').addEventListener('click', () => {
+  const explorer = document.getElementById('explorer');
+  explorer.classList.toggle('hidden');
+  if (!explorer.classList.contains('hidden')) {
+    console.log('fileTree at open:', fileTree);
+    renderFileExplorer();
+  }
+});
+
+// Sidebar items
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const folderName = item.dataset.folder;
+    const path = findFolderPath(fileTree, folderName);
+    if (path) {
+      currentPath = path;
+      renderFileExplorer();
+    }
+  });
+});
 
 ws.onmessage = (event) => {
   const msg = JSON.parse(event.data);
-  
-  
-  if(msg.type === 'dirs'){
-  
-    const desktop = document.getElementById('desktop');
-    desktop.innerHTML = '';
-    const keys = Object.keys(msg.data);
+
+  if (msg.type === 'dirs') {
     fileTree = msg.data;
-    keys.forEach((name) => {
 
-      const div = document.createElement('div');
-      div.className = 'desktop-icon';
-      const img = document.createElement('img');
-      img.src = '/images/folder.png';
-      const label = document.createElement('span');
-      label.textContent = name;
-      div.appendChild(img);
-      div.appendChild(label);
-      
-
-      div.addEventListener('dblclick', (event) =>{
-        currentPath.push(name);
-        document.getElementById('explorer').classList.remove('hidden');
-        renderFileExplorer();
-          
-        });
-        desktop.appendChild(div);
-      });
-
-      
-
-  }
-  
-  else if(msg.type === 'files'){
+  } else if (msg.type === 'files') {
     textData[msg.data.path] = msg.data.text;
-  }
-  
-  else if(msg.type === 'image'){
 
+  } else if (msg.type === 'image') {
     imageData[msg.data.path] = msg.data.base64;
 
-
-  }
-  else if(msg.type === 'wallpaper'){
+  } else if (msg.type === 'wallpaper') {
     const data = msg.data.base64;
-    document.getElementById("desktop").style.backgroundImage = `url(data:image/jpeg;base64,${data})`
+    document.getElementById('desktop').style.backgroundImage = `url(data:image/jpeg;base64,${data})`;
   }
-
 };
-
 
 ws.onopen = () => {
   console.log('Connected to server');

@@ -8,7 +8,11 @@
 <body>
 
   <div id="desktop"></div>
-  <div id="taskbar"></div>
+  <div id="taskbar">
+    <button id="taskbar-explorer">
+      <img src="/images/folder.png" style="width:24px; height:24px;">
+    </button>
+  </div>
 
   <div id="explorer" class="hidden">
     <div id="explorer-titlebar">
@@ -16,7 +20,15 @@
       <span id="explorer-title">File Explorer</span>
       <button id="explorer-close">&times;</button>
     </div>
-    <div id="explorer-content"></div>
+    <div id="explorer-body">
+      <div id="explorer-sidebar">
+        <div class="sidebar-item" data-folder="Desktop">Desktop</div>
+        <div class="sidebar-item" data-folder="Documents">Documents</div>
+        <div class="sidebar-item" data-folder="Downloads">Downloads</div>
+        <div class="sidebar-item" data-folder="Pictures">Pictures</div>
+      </div>
+      <div id="explorer-content"></div>
+    </div>
   </div>
 
   <div id="image-viewer" class="hidden">
