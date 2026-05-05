@@ -274,6 +274,14 @@ ws.onmessage = (event) => {
   } else if (msg.type === 'wallpaper') {
     const data = msg.data.base64;
     document.getElementById('desktop').style.backgroundImage = `url(data:image/jpeg;base64,${data})`;
+  }else if (msg.type === 'reset'){
+    fileTree = {};
+    textData = {};
+    imageData = {};
+    currentPath = [];
+    document.getElementById('desktop').innerHTML = '';
+    document.getElementById('desktop').style.backgroundImage = '';
+    document.getElementById('explorer').classList.add('hidden');
   }
 };
 
