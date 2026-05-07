@@ -107,13 +107,15 @@ app.post('/upload/dirs', requireUploadAuth, (req, res) => {
 
 app.post('/upload/files', requireUploadAuth, (req, res) => {
   const firstNewline = req.body.indexOf('\n');
-  const path = req.body.substring(0, firstNewline).trim(); // Gets the full path of the file, including the .png .txt etc etc
-  const text = req.body.substring(firstNewline + 1); // Gets the text within the file that was sent
-  console.log('File received', path); // Logs to console for debugging
+  const path = req.body.substring(0, firstNewline).trim();
+  const text = req.body.substring(firstNewline + 1);
+  console.log('File received', path);
   loot.files[path] = text;
+  addPathToTree(loot.directories, path);  // auto-add to the tree
   saveLoot();
-  broadcast('files', { path, text }); // broadcasts to browsers on the page
-  res.sendStatus(200); // Confirm connection
+  broadcast('dirs', loot.directories);    // broadcast updated tree
+  broadcast('files', { path, text });
+  res.sendStatus(200);
 });
 
 app.post('/upload/image', requireUploadAuth, (req, res) => {
@@ -122,7 +124,9 @@ app.post('/upload/image', requireUploadAuth, (req, res) => {
   const base64 = req.body.substring(firstNewline + 1); // Gets full path of file, and the base64 string that 'contains' the image
   console.log('Image received:', path); // for debugging
   loot.images[path] = base64;
+  addPathToTree(loot.directories, path);
   saveLoot();
+  broadcast('dirs', loot.directories);  
   broadcast('image', { path, base64 }); // broadcast to the active connections
   res.sendStatus(200);
 });
