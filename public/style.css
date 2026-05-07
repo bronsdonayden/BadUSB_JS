@@ -241,5 +241,5 @@ body {
 }
 
 .hidden {
-  display: none !important; /* quick fix for the file system opening on start and not being closeable.
+  display: none !important;
 }

