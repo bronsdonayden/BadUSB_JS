@@ -52,6 +52,7 @@ function makeDraggable(windowEl, titlebarEl) {
   });
 }
 
+// Make all three windows draggable
 makeDraggable(document.getElementById('explorer'), document.getElementById('explorer-titlebar'));
 makeDraggable(document.getElementById('image-viewer'), document.getElementById('viewer-titlebar'));
 makeDraggable(document.getElementById('text-viewer'), document.getElementById('text-viewer-titlebar'));
@@ -83,6 +84,8 @@ function ImageViewer(fullPath) {
   document.getElementById('image-viewer').classList.remove('hidden');
 }
 
+// Rebuilds desktop icons from the file tree and prreserves wallpaper before clearing.
+// folders open the explorer on double click, files open the appropriate viewer.
 function renderDesktop() {
   const desktopPath = findFolderPath(fileTree, 'Desktop');
   if (!desktopPath) return;
@@ -145,6 +148,7 @@ function getNode(path) {
   return node;
 }
 
+// Same logic as renderDesktop but targets the explorer window instead of the desktop
 function renderFileExplorer() {
   const node = getNode(currentPath);
   const content = document.getElementById('explorer-content');
@@ -263,6 +267,7 @@ document.getElementById('sidebar-root').addEventListener('click', () => {
   renderFileExplorer();
 });
 
+// handle incoming WS messages and update state and rerender based on message type
 ws.onmessage = (event) => {
   const msg = JSON.parse(event.data);
 
