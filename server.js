@@ -8,9 +8,9 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-const uploadToken = '06a3111a4b61f5ea2959f7a8207547fc';
+const uploadToken = '06a3111a4b61f5ea2959f7a8207547fc'; // Replace with any hash you want
 const dashboardPassword = '12345';
-const wipePassword = '7c16dd6b84e7bf36ae42effe78797440';
+const wipePassword = '7c16dd6b84e7bf36ae42effe78797440'; // Replace this with any hash you want
 
 app.use(express.text({ limit: '50mb' }));  // sets limit so we can have decently large file sizes.
 app.use(express.json());
